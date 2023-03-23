@@ -35,7 +35,6 @@ public class ChainTest
     
     public void chainMotor(Joystick xcon)
     {
-
         if(xcon.getRawButton(4)){
             chainmotor.set(.5);
         }

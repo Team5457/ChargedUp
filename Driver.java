@@ -56,7 +56,7 @@ public class Driver extends SubsystemBase{
             double y = controller.getRawAxis(0);
             double x = controller.getRawAxis(1);
             if (slowMo) {
-                drive.arcadeDrive(x * safty *-0.7, y * safty*-0.7, true);
+                drive.arcadeDrive(x * safty *-0.4, y * safty*-0.4, true);
             }
             else if (turbo){
                 //do not change 0

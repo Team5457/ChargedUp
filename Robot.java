@@ -13,7 +13,10 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 
 
@@ -32,6 +35,9 @@ public class Robot extends TimedRobot {
 
   //timer
   private final Timer m_timer = new Timer();
+  
+  //encoder
+  private final DutyCycleEncoder m_encoder = new DutyCycleEncoder(0); 
 
 
 
@@ -42,8 +48,9 @@ public class Robot extends TimedRobot {
   private final ChainTest chain = new ChainTest();
 
   //Camera
+
   // Do not remove, this initiates the camera and it will show up in smartdashboard
-  //private final Camera camera = new Camera();
+  private final Camera camera = new Camera();
 
 
   
@@ -59,7 +66,7 @@ public class Robot extends TimedRobot {
   
 
   //Pneumatics
-  private final DoubleSolenoid m_doubleSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, 0, 1);
+  private final DoubleSolenoid m_doubleSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, 0, 15);
   
 /* 
 Button formating
@@ -97,6 +104,8 @@ Button 13 = home button
   public void robotInit()
   {
     comp.enableDigital();
+    m_encoder.reset();
+    CameraServer.startAutomaticCapture();
     /**
      * This runs a soon as robot starts
      * transfer initialzation of variables here. Can quicker modify variables throughout the bot code
@@ -120,15 +129,18 @@ Button 13 = home button
   @Override
   public void autonomousPeriodic() {
 
-    if(m_timer.get() > 0 && m_timer.get() < 2.1)
+    /*if(m_timer.get() > 0 && m_timer.get() < 2.1)
     {
-      drive.stopMotor(); 
-      //ballSystem.shoot(); 
-    }
+      drive.stopMotor();  
+    }*/
     
-    else if(m_timer.get()>2.10 && m_timer.get() < 3)
+    /*else if(m_timer.get()>2.10 && m_timer.get() < 3)
     {
-      drive.DriveMotorSpeeds(-.6, -.6); //drives
+      drive.DriveMotorSpeeds(.3, .3); //drives
+    }*/
+    if(m_timer.get()< 3.5)
+    {
+      drive.DriveMotorSpeeds(.5, .5); //drives
     }
     
     //Template Autonomous
@@ -146,6 +158,7 @@ Button 13 = home button
   /** This function is called once each time the robot enters teleoperated mode. */
   @Override
   public void teleopInit() {
+
     //move teleop variables here 
     //hang.reset();
 
@@ -155,13 +168,16 @@ Button 13 = home button
   /** This function is called periodically during teleoperated mode. */
   @Override
   public void teleopPeriodic() {
-
+    
+    
+    calcArmSpeed(kDefaultPeriod);
     //hang.hangerMove(sJoy);
     chain.chainMotor(xcon);
     drive.driveRobot(xcon);
     //ballSystem.deploy(xcon, drive);
 
     //piston controls
+    
     if(xcon.getRawButtonPressed(kDoubleSolenoidForward)){
       m_doubleSolenoid.set(DoubleSolenoid.Value.kForward);
     }
@@ -178,4 +194,12 @@ Button 13 = home button
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {}
+
+  public double calcArmSpeed(double setPoint){
+    double armPos = m_encoder.getAbsolutePosition();
+    double diff = armPos-setPoint;
+    SmartDashboard.putNumber("Left Drive Encoder", armPos);
+    return diff;
+
+  }
 }
